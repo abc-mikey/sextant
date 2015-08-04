@@ -24,6 +24,7 @@ SOFTWARE.*/
 // states when programatically controlling navigation, will return a navigator 
 // assistant 
 function Sextant(locator, updater, hashchangesstate) {
+    if (nav) return nav; // return our instance if it exists
 
     if (typeof updater !== "function") {
         throw "Sextant constructor expects a function reference for updater";
