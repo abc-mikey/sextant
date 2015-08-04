@@ -65,9 +65,9 @@ function Sextant(locator, updater, hashchangesstate) {
                                    // as "popstate" wont give us the current 
                                    // state when pushing
         if (replace == true) {
-            history.pushState(nav.ret(state, title, url), title, url); 
-        } else {
             history.replaceState(nav.ret(state, title, url), title, url);
+        } else {
+            history.pushState(nav.ret(state, title, url), title, url); 
         }
     }
 
