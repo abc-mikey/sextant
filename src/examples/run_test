@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+dir=$( dirname "$0" )
+cmd=$( which morbo 2>/dev/null )
+if [[ -n "$cmd" && -x "$cmd" ]]; then 
+    $cmd "$dir/test.pl"
+else 
+    echo "Please install mojolicious (http://mojolicio.us) and check that \"morbo\" is in the path"
+fi

@@ -1,0 +1,35 @@
+<!doctype html>  
+<html>
+  <head>  
+    <meta charset="utf-8">  
+    <title>Sextant example - no JSON</title>  
+    <meta name="description" content="Example of Sextant - Simple borwser navigation manipulation">  
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="../sextant.js"></script>
+    <script>
+  
+      var nav = Sextant(
+          function (url) { 
+              var state = url.split("#")[1]-0; // coerce into number with no risk of concatenation
+              if (isNaN(state)) state = 0;
+              return nav.ret(state, "Page "+state, "#"+state); 
+          },
+          function (state) { console.log("I've been clicked! Page "+state); },
+          true
+      ); // callbacks to get the current state from the url and to update the page on state change
+  
+      window.onload = function () {  
+          nav.init();
+          document.getElementById("pusher").onclick = function () {
+              nav.go(function (state) { return nav.ret(++state, "Page "+state, "#"+state); });
+              return false;
+          };
+      };
+      
+    </script>
+  </head>  
+    
+  <body>  
+      <a id="pusher" href="#">Push history</a>
+  </body>  
+</html>  
