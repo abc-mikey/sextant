@@ -15,7 +15,7 @@
               return nav.ret(state, "Page "+state, "#"+state); 
           },
           function (state) { console.log("I've been clicked! Page "+state); },
-          true
+          true // trigger hashchange event
       ); // callbacks to get the current state from the url and to update the page on state change
   
       window.onload = function () {  

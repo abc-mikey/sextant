@@ -4,7 +4,6 @@
     <meta charset="utf-8">  
     <title>Sextant example - no JSON</title>  
     <meta name="description" content="Example of Sextant - Simple borwser navigation manipulation">  
-    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>  -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script src="../sextant.js"></script>
     <script>
@@ -15,70 +14,12 @@
               return nav.ret(state, "Page "+state, "#"+state); 
           },
           function (state) { console.log("I've been clicked! Page "+state); },
-          true
+          true // trigger hashchange event 
       ); // callbacks to get the current state from the url and to update the page on state change
   
       $(document).ready(function () {
-          //$("a").go(function (state) { return nav.ret(++state, "Page "+state, "#"+state); }); // access jQuery plugin part of Navigator to setup click navigation events
-  
-          /*
-          function readJSON(json, stat) {
-              if (stat == "success") {
-                  nav.go(function () { return nav.ret(json.next, "Page "+json.next, "#"+json.next); });
-              } else {
-                  console.log("warn");
-              }
-          }
-  
-          $("a").go(function (state) { 
-              $.getJSON("/test/"+state, readJSON);
-              return;
-          });
-          */
-  
           $("a").goJSON(function (state) { return "/test/"+state; }, function (json) { return nav.ret(json.next, "Page "+json.next, "#"+json.next); });
       });
-  
-  
-      /* 
-      window.onload = function () {  
-          nav.init();
-          document.getElementById("ted").onclick = function () {
-              nav.go(function (state) { return nav.ret(++state, "Page "+state, "#"+state); });
-              return false;
-          };
-      };
-      */
-      
-     /* 
-  
-  
-  
-      var stack = 'Adam Bernard Calvin Dermot Edwin Fredy'.split(' ');
-      function get_state(step) {
-          return { title: stack[step],
-                   url:   window.location.href.split('#')[0]+'#'+stack[step],
-                   step:  step
-          };
-      }
-      function set_state(state) {
-          step = state.step;
-          window.document.title = state.title;
-          //window.document.href = state.url;
-          console.log("I've been clicked! "+state.title);
-      }
-      var step = -1;
-      function next_state() {
-          var state = get_state(++step >= stack.length ? 0 : step); //get the next state
-          set_state(state);
-          history.pushState(state, state.title, state.url);         // think of this as setting the URL
-          return false;
-      }
-  
-      window.addEventListener("popstate", function(event) {
-          set_state(event.state);
-      });
-      */
     </script>
   </head>  
     
