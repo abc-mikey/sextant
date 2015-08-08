@@ -16,6 +16,10 @@
           function (state) { console.log("I've been clicked! Page "+state); },
           true // trigger hashchange event 
       ); // callbacks to get the current state from the url and to update the page on state change
+
+      var a = snglSextant();
+      var b = snglSextant();
+
   
       $(document).ready(function () {
           $("a").goJSON(function (state) { return "/test/"+state; }, function (json) { return nav.ret(json.next, "Page "+json.next, "#"+json.next); });
@@ -24,6 +28,6 @@
   </head>  
     
   <body>  
-      <a id="ted" href="#">Push history</a>
+      <a id="pusher" href="#">Generate next state and push to history</a>
   </body>  
 </html>  

@@ -20,6 +20,51 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
+var snglSextant = (function () {
+ 
+  // reference
+  var nav;
+ 
+  function init() {
+ 
+    // TODO initialise my singleton
+ 
+    // TODO add private methods / properties to singleton
+ 
+    return {
+ 
+      // TODO add public methods / properties
+ 
+    };
+ 
+  };
+ 
+  // return a function to use like "var nav = snglSextant()" or an object to use like "var nav = snglSextant.nav()"
+  return function() {
+ 
+    // have a method or property to return nav if this is an object
+    /*
+      nav: function () {
+ 
+      if ( !nav ) {
+        nav = init();
+      }
+ 
+      return nav;
+    }
+    */
+
+    // return singleton as one stop function
+    if ( !nav ) {
+      nav = init();
+    }
+ 
+    return nav;
+ 
+  };
+ 
+})();
+
 // semi-constructor for Sextant object to help manage browser histories and 
 // states when programatically controlling navigation, will return a navigator 
 // assistant 
