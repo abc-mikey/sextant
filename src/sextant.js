@@ -24,7 +24,26 @@ SOFTWARE.*/
 // states when programatically controlling navigation, will return a navigator 
 // assistant 
 function Sextant(locator, updater, hashchangesstate) {
-    if (nav) return nav; // return our instance if it exists
+    
+    // helper function for safely printing to the console
+    function warn(warning) {
+        if (typeof window.console !== "undefined") {
+            console.log(warning);
+        }
+    }
+
+    // check for previous instance
+    if (nav) {
+        if (typeof locator !== "undefined" ||
+            typeof updater !== "undefined" ||
+            typeof hashchangestate !== "undefined") {
+            warn("Sextant function called multiple times with parameters, "+
+                 "must only be instanciated once. Returning first instance. "+
+                 "Try without parameters to fetch a reference to the first "+
+                 "instance \"Sextant()\".");
+        }
+        return nav; // return our instance if it exists
+    }
 
     if (typeof updater !== "function") {
         throw "Sextant constructor expects a function reference for updater";
@@ -38,12 +57,6 @@ function Sextant(locator, updater, hashchangesstate) {
                      ? hashchangesstate 
                      : false;
 
-    function warn(warning) {
-        if (typeof window.console !== "undefined") {
-            console.log(warning);
-        }
-    }
-     
     // private helper function to call updater and then update the current state
     // and page title
     function update(state, title, url) {
@@ -52,9 +65,8 @@ function Sextant(locator, updater, hashchangesstate) {
         window.document.title = title; 
     }
 
-    // TODO clear the history stack in front of the current position
     // private helper function to read return state and update the page, pushing
-    // / replacing the state to the history stack
+    // or replacing the state on the history stack
     function push(ret, replace) {
         if (typeof ret === "undefined" || ret === null || ret == '') { return; }
         replace = replace === "boolean" ? replace : false;
@@ -144,7 +156,8 @@ function Sextant(locator, updater, hashchangesstate) {
 
 
     if (typeof window.jQuery === "undefined") {
-        warn("Warning, jQuery not loaded. Continuing Sextant without jQuery.");
+        warn("jQuery not loaded. Make sure that jQuery script is included "+
+             "before calling Sextant function.");
     } else {
         // section granting jQuery safe access to dollar
         (function( $ ) {
@@ -208,7 +221,9 @@ function Sextant(locator, updater, hashchangesstate) {
                 return this;
             };
         }( jQuery ));
+
+        return nav; // return the navigator assistant 
     }
 
-    return nav; // return the navigator assistant 
+    return; // return undefined if not able to return "nav"
 }
