@@ -26,11 +26,19 @@ function SextantPage (state, title, url) {
 }
 
 /**
- * Setup Sextant jQuery plugin 
+ * Setup Sextant jQuery plugin: 
  *   locator - function that takes the url and returns a SextantPage
  *   updater - function that takes the state and updates the page
  *   hashchangestate - optional parameter which when true makes changes to the 
  *                     hash part of the url trigger the change state event
+ *
+ * jQuery plugin functions:
+ *   clickTo     - on click callback function to take state and return SextantPage to navigate to
+ *   clickToJSON - on click call url callback with state to return the JSON url to call,
+ *                 pass JSON response to callback to return SextantPage to navigate to
+ *
+ * TODO The simplified version now only provides jQuery functions for handling clicks.
+ *      Add back functions for doing navigation manually.
  */ 
 function Sextant(locator, updater, hashchangesstate) {
     // TODO add callonce check
@@ -59,39 +67,29 @@ function Sextant(locator, updater, hashchangesstate) {
         }
     }
 
-    // update the page, setting the title, the state and letting the callback 
-    // update the contents
-    function update(state, title, url) {
-        updater(state); 
-        _state = state; 
-        window.document.title = title; 
+    // update the page, setting the title, the state and calling the updater
+    // returns true on success (updater may return "false" to indicate failure)
+    function update(page) {
+        if (typeof page === "undefined" || page === null || page == '') return false;
+        if(updater(page.state) == false) return false; 
+        _state = page.state; 
+        window.document.title = page.title; 
+        return true;
     }
 
-    // update the page based on the state when the hash change without changing the history
-    function hashchange_event() {
-        var page = locator(window.location.href); 
-        if (typeof page === "undefined" || page === null || page == '') { return; }
-        update(page.state, page.title, page.url);
-    }
-
-    // private helper function to read return state and update the page, pushing
-    // or replacing the state on the history stack
+    // update the page and push or replace the state onto the history stack
     function push(page, replace) {
-        if (typeof page === "undefined" || page === null || page == '') { return; }
+        // default to push not replace
         replace = replace === "boolean" ? replace : false;
-        var state = page.state;
-        var title = page.title;
-        var url = page.url;
-        update(state, title, url); // do this by hand when performing navigation
-                                   // as "popstate" wont give us the current 
-                                   // state when pushing
+        // do this by hand when performing navigation as "popstate" wont give 
+        // us the current state when pushing
+        if(!update(page)) return;   
         if (replace == true) {
-            history.replaceState(SextantPage(state, title, url), title, url);
+            history.replaceState(page, page.title, page.url);
         } else {
-            history.pushState(SextantPage(state, title, url), title, url); 
+            history.pushState(page, page.title, page.url); 
         }
     }
-
 
     if (typeof window.jQuery === "undefined") {
         warn("jQuery not loaded. Make sure that jQuery script is included "+
@@ -99,8 +97,11 @@ function Sextant(locator, updater, hashchangesstate) {
     } else {
         // section granting jQuery safe access to dollar
         (function( $ ) {
+            /**
+             * jQuery event handlers
+             */
 
-            // update history on page load
+            // update and replace history on page load
             $(document).ready(function () {
               push(locator(window.location.href), true); 
             });
@@ -108,10 +109,10 @@ function Sextant(locator, updater, hashchangesstate) {
             if (hashchangesstate == true) { 
                 // this appears to be firing on navigation via history buttons 
                 // on Firefox, however it is required to make changing the URL 
-                // to load the new state
-                // what is needed is an alternative to init that does not push 
-                // to the history but does load the sate
-                $(window).on("hashchange", hashchange_event);
+                // load the new state
+                $(window).on("hashchange", function () {
+                  update(locator(window.location.href)); 
+                });
 
             // suppress updates on popstate event if using hashchange events as
             // they enter a race condition
@@ -125,20 +126,25 @@ function Sextant(locator, updater, hashchangesstate) {
                                                 // history on the browser even 
                                                 // though it fires on 
                                                 // history.pushState()
-                        update(event.state.state, 
-                               event.state.title, 
-                               event.state.url);
+                        update(SextantPage(event.state.state, 
+                                           event.state.title, 
+                                           event.state.url));
                     }
                 });
             }
 
+            /**
+             * jQuery plugin functions
+             */
+
             // call the new_state callback with the current state and read the 
             // new state and url from it, then update the history which 
             // generates a popstate that updates the page
-            $.fn.go = function (callback) {
+            $.fn.clickTo = function (callback) {
                 if (typeof callback !== "function") {
-                    throw "Sextant go expects a function reference";
+                    throw "Sextant clickTo expects a function reference";
                 }
+                // TODO check that "this" supports click
                 this.click(function (event) {
                     event.preventDefault();
                     push(callback(_state)); 
@@ -146,13 +152,14 @@ function Sextant(locator, updater, hashchangesstate) {
                 return this;
             };
 
-            $.fn.goJSON = function (url_callback, callback, err_callback) {
+            $.fn.clickToJSON = function (url_callback, callback, err_callback) {
                 if (typeof url_callback !== "function") {
-                    throw "Sextant goJSON expects a url_callback function reference";
+                    throw "Sextant clickToJSON expects a url_callback function reference";
                 }
                 if (typeof callback !== "function") {
-                    throw "Sextant goJSON expects a callbcak function reference";
+                    throw "Sextant clickToJSON expects a callbcak function reference";
                 }
+                // TODO check that "this" supports click
                 this.click(function (event) {
                     event.preventDefault();
                     
