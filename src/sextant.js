@@ -122,6 +122,20 @@ function Sextant(locator, updater, hashchangesstate) {
         // retrieve the state from the url
         init: function () {
             push(locator(window.location.href), true); 
+        },
+
+        // TODO Tidy this up
+        initState: function () {
+            function helper(ret) {
+                if (typeof ret === "undefined" || ret === null || ret == '') { return; }
+                var state = ret.state;
+                var title = ret.title;
+                var url = ret.url;
+                update(state, title, url); // do this by hand when performing navigation
+                                           // as "popstate" wont give us the current 
+                                           // state when pushing
+            }
+            helper(locator(window.location.href)); 
         }
     };
 
