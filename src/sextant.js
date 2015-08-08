@@ -149,7 +149,12 @@ function Sextant(locator, updater, hashchangesstate) {
             // jQuery to add init to page ready and - if used - hashchange
             $(document).ready(nav.init);
             if (hashchangesstate == true) { 
-                $(window).on("hashchange", nav.init);
+                // this appears to be firing on navigation via history buttons 
+                // on Firefox, however it is required to make changing the URL 
+                // to load the new state
+                // what is needed is an alternative to init that does not push 
+                // to the history but does load the sate
+                $(window).on("hashchange", nav.initState);
 
             // suppress updates on popstate event if using hashchange events as
             // they enter a race condition
