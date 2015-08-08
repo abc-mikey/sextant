@@ -7,16 +7,24 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script src="../sextant.js"></script>
     <script>
+        // safely print warnings to the console
+        function warn(warning) {
+            if (typeof window.console !== "undefined") {
+                console.log(warning);
+            }
+        }
   
+        // setup Sextant
         Sextant(
             // locate the state from the page url
             function (url) {
-                var state = url.split("#")[1] - 0; // coerce into number with no risk of concatination
-                return SextantPage(state, "Page " + state, "#" + state); // the current page based on the url
+                // coerce into number without concatinating
+                var state = url.split("#")[1] - 0; 
+                return SextantPage(state, "Page " + state, "#" + state); 
             },
             // update the page from the state
             function (state) {
-                console.log("I've been clicked! Page " + state);
+                warn("I've been clicked! Page " + state);
                 $("#pageno").html("Page: " + state)
             },
             // trigger hashchange event 
@@ -25,7 +33,7 @@
 
         $(document).ready(function() {
             $("a").clickToJSON(
-                // get the JSON url from the state
+                // get the JSON url for this click action from the state
                 function (state) {
                     return "/test/" + state;
                 },
@@ -33,7 +41,9 @@
                 function (json) {
                     return SextantPage(json.next, "Page " + json.next, "#" + json.next);
                 },
-                function () {
+                // handle errors
+                function (stat, state) {
+                    warn("Error on page " + state.title + ": " + stat);
                 }
 
             );
