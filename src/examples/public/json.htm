@@ -8,17 +8,17 @@
     <script src="../sextant.js"></script>
     <script>
   
-      var nav = Sextant(
+      Sextant(
           function (url) { 
               var state = url.split("#")[1]-0; // coerce into number with no risk of concatination
-              return nav.ret(state, "Page "+state, "#"+state); 
+              return SextantPage(state, "Page "+state, "#"+state);  // the current page based on the url
           },
-          function (state) { console.log("I've been clicked! Page "+state); },
+          function (state) { console.log("I've been clicked! Page "+state); }, // build the page from the state
           true // trigger hashchange event 
       ); // callbacks to get the current state from the url and to update the page on state change
   
       $(document).ready(function () {
-          $("a").goJSON(function (state) { return "/test/"+state; }, function (json) { return nav.ret(json.next, "Page "+json.next, "#"+json.next); });
+          $("a").goJSON(function (state) { return "/test/"+state; }, function (json) { return SextantPage(json.next, "Page "+json.next, "#"+json.next); });
       });
     </script>
   </head>  

@@ -20,11 +20,20 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-// semi-constructor for Sextant object to help manage browser histories and 
-// states when programatically controlling navigation, will return a navigator 
-// assistant 
-function Sextant(locator, updater, hashchangesstate) {
-    
+// new page object  to return a valid state / title / url object
+function SextantPage (state, title, url) { 
+  return { state: state, title: title, url: url }; 
+}
+
+/*
+ * Setup Sextant
+ *   locator - function that takes the url and returns a SextantPage
+ *   builder - function that takes the state and builds the page
+ *   hashchangestate - optional parameter which when true makes changes to the hash part of the url trigger the change state event
+ */ 
+function Sextant(locator, builder, hashchangesstate) {
+    // TODO add callonce check
+
     // helper function for safely printing to the console
     function warn(warning) {
         if (typeof window.console !== "undefined") {
@@ -32,21 +41,8 @@ function Sextant(locator, updater, hashchangesstate) {
         }
     }
 
-    // check for previous instance
-    if (nav) {
-        if (typeof locator !== "undefined" ||
-            typeof updater !== "undefined" ||
-            typeof hashchangestate !== "undefined") {
-            warn("Sextant function called multiple times with parameters, "+
-                 "must only be instanciated once. Returning first instance. "+
-                 "Try without parameters to fetch a reference to the first "+
-                 "instance \"Sextant()\".");
-        }
-        return nav; // return our instance if it exists
-    }
-
-    if (typeof updater !== "function") {
-        throw "Sextant constructor expects a function reference for updater";
+    if (typeof builder !== "function") {
+        throw "Sextant constructor expects a function reference for builder";
     }
     if (typeof locator !== "function") {
         throw "Sextant constructor expects a function reference for locator";
@@ -57,102 +53,50 @@ function Sextant(locator, updater, hashchangesstate) {
                      ? hashchangesstate 
                      : false;
 
-    // private helper function to call updater and then update the current state
+    // private helper function to call builder and then build the current state
     // and page title
-    function update(state, title, url) {
-        updater(state); 
+    function build(state, title, url) {
+        builder(state); 
         _state = state; 
         window.document.title = title; 
     }
 
-    // private helper function to read return state and update the page, pushing
+
+    // private helper function to read return state and build the page, pushing
     // or replacing the state on the history stack
-    function push(ret, replace) {
-        if (typeof ret === "undefined" || ret === null || ret == '') { return; }
+    function push(page, replace) {
+        if (typeof page === "undefined" || page === null || page == '') { return; }
         replace = replace === "boolean" ? replace : false;
-        var state = ret.state;
-        var title = ret.title;
-        var url = ret.url;
-        update(state, title, url); // do this by hand when performing navigation
+        var state = page.state;
+        var title = page.title;
+        var url = page.url;
+        build(state, title, url); // do this by hand when performing navigation
                                    // as "popstate" wont give us the current 
                                    // state when pushing
         if (replace == true) {
-            history.replaceState(nav.ret(state, title, url), title, url);
+            history.replaceState(SextantPage(state, title, url), title, url);
         } else {
-            history.pushState(nav.ret(state, title, url), title, url); 
+            history.pushState(SextantPage(state, title, url), title, url); 
         }
     }
 
-    // navigator assistant 
-    var nav = { 
-        
-        // helper function to return a valid state / title / url object
-        ret: function (state, title, url) { 
-            return { state: state, title: title, url: url }; 
-        },
 
-        // private helper function to go to a new state
-        go: function (callback) {
-            if (typeof callback !== "function") {
-                throw "navigator go expects a function reference";
-            }
-            push(callback(_state)); 
-        },
-
-        goJSON: function (url_callback, callback, err_callback) {
-            if (typeof callback !== "function") {
-                throw "navigator goJSON expects a function reference";
-            }
-            if (typeof url_callback !== "function") {
-                throw "navigator goJSON expects a function reference";
-            }
-            if (typeof window.jQuery === "undefined") { 
-                warn("goJSON unavailable without jQuery"); 
+    // TODO Tidy this up
+    function nav_initState  () {
+        function helper(page) {
+            if (typeof page === "undefined" || page === null || page == '') { 
                 return; 
             }
-            var url = url_callback(_state);
-            if (typeof url === "undefined" || url === null || url == '') { 
-                return; 
-            }
-
-            // section granting jQuery safe access to dollar
-            (function( $ ) {
-                
-                $.getJSON(url, function (json, stat) {
-                    if (stat == "success") {
-                        push(callback(json, _state)); 
-                    } else if (typeof err_callback === "function") {
-                        err_callback(stat, _state);
-                    } else {
-                        warn("Failed to open page: "+url);
-                    }
-                });
-            }( jQuery ));
-        },
-            
-        // private helper function to initialise the page using the callabck to
-        // retrieve the state from the url
-        init: function () {
-            push(locator(window.location.href), true); 
-        },
-
-        // TODO Tidy this up
-        initState: function () {
-            function helper(ret) {
-                if (typeof ret === "undefined" || ret === null || ret == '') { 
-                    return; 
-                }
-                var state = ret.state;
-                var title = ret.title;
-                var url = ret.url;
-                update(state, title, url); // do this by hand when performing 
-                                           // navigation as "popstate" wont 
-                                           // give us the current state when 
-                                           // pushing
-            }
-            helper(locator(window.location.href)); 
+            var state = page.state;
+            var title = page.title;
+            var url = page.url;
+            build(state, title, url); // do this by hand when performing 
+                                       // navigation as "popstate" wont 
+                                       // give us the current state when 
+                                       // pushing
         }
-    };
+        helper(locator(window.location.href)); 
+    }
 
 
     if (typeof window.jQuery === "undefined") {
@@ -163,7 +107,9 @@ function Sextant(locator, updater, hashchangesstate) {
         (function( $ ) {
 
             // jQuery to add init to page ready and - if used - hashchange
-            $(document).ready(nav.init);
+            $(document).ready(function () {
+              push(locator(window.location.href), true); 
+            });
             // TODO this needs an equivelent for not using jQuery, or maybe drop
             // non jQuery support
             if (hashchangesstate == true) { 
@@ -172,21 +118,21 @@ function Sextant(locator, updater, hashchangesstate) {
                 // to load the new state
                 // what is needed is an alternative to init that does not push 
                 // to the history but does load the sate
-                $(window).on("hashchange", nav.initState);
+                $(window).on("hashchange", nav_initState);
 
             // suppress updates on popstate event if using hashchange events as
             // they enter a race condition
             } else { 
 
-                // on history popstate change call the updater callback with the
-                // current state so it can update the page
+                // on history popstate change call the builder callback with the
+                // current state so it can build the page
                 window.addEventListener("popstate", function (event) { 
                     if (event.state !== null) { // weirdly this only gives the 
                                                 // state if navigating using the
                                                 // history on the browser even 
                                                 // though it fires on 
                                                 // history.pushState()
-                        update(event.state.state, 
+                        build(event.state.state, 
                                event.state.title, 
                                event.state.url);
                     }
@@ -202,7 +148,11 @@ function Sextant(locator, updater, hashchangesstate) {
                 }
                 this.click(function (event) {
                     event.preventDefault();
-                    nav.go(callback);
+                    
+                    if (typeof callback !== "function") {
+                        throw "navigator go expects a function reference";
+                    }
+                    push(callback(_state)); 
                 });
                 return this;
             };
@@ -216,14 +166,24 @@ function Sextant(locator, updater, hashchangesstate) {
                 }
                 this.click(function (event) {
                     event.preventDefault();
-                    nav.goJSON(url_callback, callback, err_callback);
+                    
+                    var url = url_callback(_state);
+                    if (typeof url === "undefined" || url === null || url == '') { 
+                        return; 
+                    }
+
+                    $.getJSON(url, function (json, stat) {
+                        if (stat == "success") {
+                            push(callback(json, _state)); 
+                        } else if (typeof err_callback === "function") {
+                            err_callback(stat, _state);
+                        } else {
+                            warn("Failed to open page: "+url);
+                        }
+                    });
                 });
                 return this;
             };
         }( jQuery ));
-
-        return nav; // return the navigator assistant 
     }
-
-    return; // return undefined if not able to return "nav"
 }
