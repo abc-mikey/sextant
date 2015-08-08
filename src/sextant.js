@@ -21,8 +21,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 // new page object  to return a valid state / title / url object
-function SextantPage (state, title, url) { 
-  return { state: state, title: title, url: url }; 
+function SextantPage(state, title, url) {
+    return {
+        state: state,
+        title: title,
+        url: url
+    };
 }
 
 /**
@@ -33,16 +37,17 @@ function SextantPage (state, title, url) {
  *                     hash part of the url trigger the change state event
  *
  * jQuery plugin functions:
- *   clickTo     - on click callback function to take state and return SextantPage to navigate to
- *   clickToJSON - on click call url callback with state to return the JSON url to call,
- *                 pass JSON response to callback to return SextantPage to navigate to
+ *   clickTo     - on click callback function to take state and return 
+ *                 SextantPage to navigate to
+ *   clickToJSON - on click call url callback with state to return the JSON url 
+ *                 to call, pass JSON response to callback to return SextantPage
+ *                 to navigate to
  *
- * TODO The simplified version now only provides jQuery functions for handling clicks.
- *      Add back functions for doing navigation manually.
- */ 
+ * TODO The simplified version now only provides jQuery functions for handling 
+ *      clicks. Add back functions for doing navigation manually.
+ */
 function Sextant(locator, updater, hashchangesstate) {
     // TODO add callonce check
-
     if (typeof updater !== "function") {
         throw "Sextant constructor expects a function reference for updater";
     }
@@ -59,7 +64,6 @@ function Sextant(locator, updater, hashchangesstate) {
      * Private functions 
      */
 
-
     // safely print warnings to the console
     function warn(warning) {
         if (typeof window.console !== "undefined") {
@@ -70,10 +74,15 @@ function Sextant(locator, updater, hashchangesstate) {
     // update the page, setting the title, the state and calling the updater
     // returns true on success (updater may return "false" to indicate failure)
     function update(page) {
-        if (typeof page === "undefined" || page === null || page == '') return false;
-        if(updater(page.state) == false) return false; 
-        _state = page.state; 
-        window.document.title = page.title; 
+        if (
+            typeof page === "undefined" 
+            || page === null 
+            || page == ''
+        ) return false;
+
+        if (updater(page.state) == false) return false;
+        _state = page.state;
+        window.document.title = page.title;
         return true;
     }
 
@@ -81,53 +90,52 @@ function Sextant(locator, updater, hashchangesstate) {
     function push(page, replace) {
         // default to push not replace
         replace = replace === "boolean" ? replace : false;
+
         // do this by hand when performing navigation as "popstate" wont give 
         // us the current state when pushing
-        if(!update(page)) return;   
+        if (!update(page)) return;
         if (replace == true) {
             history.replaceState(page, page.title, page.url);
         } else {
-            history.pushState(page, page.title, page.url); 
+            history.pushState(page, page.title, page.url);
         }
     }
 
     if (typeof window.jQuery === "undefined") {
-        warn("jQuery not loaded. Make sure that jQuery script is included "+
+        warn("jQuery not loaded. Make sure that jQuery script is included " + 
              "before calling Sextant function.");
     } else {
         // section granting jQuery safe access to dollar
-        (function( $ ) {
+        (function ($) {
             /**
              * jQuery event handlers
              */
 
             // update and replace history on page load
             $(document).ready(function () {
-              push(locator(window.location.href), true); 
+                push(locator(window.location.href), true);
             });
 
-            if (hashchangesstate == true) { 
+            if (hashchangesstate == true) {
                 // this appears to be firing on navigation via history buttons 
                 // on Firefox, however it is required to make changing the URL 
                 // load the new state
                 $(window).on("hashchange", function () {
-                  update(locator(window.location.href)); 
+                    update(locator(window.location.href));
                 });
 
-            // suppress updates on popstate event if using hashchange events as
-            // they enter a race condition
-            } else { 
+                // suppress updates on popstate event if using hashchange events 
+                // as they enter a race condition
+            } else {
 
                 // on history popstate change call the updater callback with the
                 // current state so it can update the page
-                window.addEventListener("popstate", function (event) { 
+                window.addEventListener("popstate", function (event) {
                     if (event.state !== null) { // weirdly this only gives the 
-                                                // state if navigating using the
-                                                // history on the browser even 
-                                                // though it fires on 
-                                                // history.pushState()
+                        // state if navigating using the history on the browser 
+                        // even though it fires on history.pushState()
                         update(SextantPage(event.state.state, 
-                                           event.state.title, 
+                                           event.state.title,
                                            event.state.url));
                     }
                 });
@@ -147,39 +155,43 @@ function Sextant(locator, updater, hashchangesstate) {
                 // TODO check that "this" supports click
                 this.click(function (event) {
                     event.preventDefault();
-                    push(callback(_state)); 
+                    push(callback(_state));
                 });
                 return this;
             };
 
             $.fn.clickToJSON = function (url_callback, callback, err_callback) {
                 if (typeof url_callback !== "function") {
-                    throw "Sextant clickToJSON expects a url_callback function reference";
+                    throw "Sextant clickToJSON expects a url_callback " +
+                          "function reference";
                 }
                 if (typeof callback !== "function") {
-                    throw "Sextant clickToJSON expects a callbcak function reference";
+                    throw "Sextant clickToJSON expects a callbcak function " +
+                          "reference";
                 }
                 // TODO check that "this" supports click
                 this.click(function (event) {
                     event.preventDefault();
-                    
+
                     var url = url_callback(_state);
-                    if (typeof url === "undefined" || url === null || url == '') { 
-                        return; 
-                    }
+                    if (
+                        typeof url === "undefined" 
+                        || url === null 
+                        || url == ''
+                    ) return;
 
                     $.getJSON(url, function (json, stat) {
                         if (stat == "success") {
-                            push(callback(json, _state)); 
+                            push(callback(json, _state));
                         } else if (typeof err_callback === "function") {
                             err_callback(stat, _state);
                         } else {
-                            warn("Failed to open page: "+url);
+                            warn("Failed to open page: " + url);
                         }
                     });
                 });
                 return this;
             };
-        }( jQuery ));
+        } (jQuery));
     }
 }

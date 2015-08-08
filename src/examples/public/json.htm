@@ -8,18 +8,36 @@
     <script src="../sextant.js"></script>
     <script>
   
-      Sextant(
-          function (url) { 
-              var state = url.split("#")[1]-0; // coerce into number with no risk of concatination
-              return SextantPage(state, "Page "+state, "#"+state);  // the current page based on the url
-          },
-          function (state) { console.log("I've been clicked! Page "+state); $("#pageno").html("Page: "+state) }, // build the page from the state
-          true // trigger hashchange event 
-      ); // callbacks to get the current state from the url and to update the page on state change
-  
-      $(document).ready(function () {
-          $("a").goJSON(function (state) { return "/test/"+state; }, function (json) { return SextantPage(json.next, "Page "+json.next, "#"+json.next); });
-      });
+        Sextant(
+            // locate the state from the page url
+            function (url) {
+                var state = url.split("#")[1] - 0; // coerce into number with no risk of concatination
+                return SextantPage(state, "Page " + state, "#" + state); // the current page based on the url
+            },
+            // update the page from the state
+            function (state) {
+                console.log("I've been clicked! Page " + state);
+                $("#pageno").html("Page: " + state)
+            },
+            // trigger hashchange event 
+            true
+        );
+
+        $(document).ready(function() {
+            $("a").clickToJSON(
+                // get the JSON url from the state
+                function (state) {
+                    return "/test/" + state;
+                },
+                // get the page from the returned JSON
+                function (json) {
+                    return SextantPage(json.next, "Page " + json.next, "#" + json.next);
+                },
+                function () {
+                }
+
+            );
+        });
     </script>
   </head>  
     
