@@ -20,7 +20,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-// new page object  to return a valid state / title / url object
+// page constructor that takes: state, title, url
 function SextantPage(state, title, url) {
     return {
         state: state,
@@ -47,7 +47,7 @@ function SextantPage(state, title, url) {
  *      clicks. Add back functions for doing navigation manually.
  */
 function Sextant(locator, updater, hashchangesstate) {
-    // TODO add callonce check
+    // TODO add call once check
     if (typeof updater !== "function") {
         throw "Sextant constructor expects a function reference for updater";
     }
