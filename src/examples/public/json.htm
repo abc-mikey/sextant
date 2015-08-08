@@ -13,7 +13,7 @@
               var state = url.split("#")[1]-0; // coerce into number with no risk of concatination
               return SextantPage(state, "Page "+state, "#"+state);  // the current page based on the url
           },
-          function (state) { console.log("I've been clicked! Page "+state); }, // build the page from the state
+          function (state) { console.log("I've been clicked! Page "+state); $("#pageno").html("Page: "+state) }, // build the page from the state
           true // trigger hashchange event 
       ); // callbacks to get the current state from the url and to update the page on state change
   
@@ -24,6 +24,7 @@
   </head>  
     
   <body>  
-      <a id="ted" href="#">Push history</a>
+      <a id="pusher" href="#">Push history</a>
+      <p id="pageno"></p>
   </body>  
 </html>  
