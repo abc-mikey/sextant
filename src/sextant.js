@@ -127,13 +127,16 @@ function Sextant(locator, updater, hashchangesstate) {
         // TODO Tidy this up
         initState: function () {
             function helper(ret) {
-                if (typeof ret === "undefined" || ret === null || ret == '') { return; }
+                if (typeof ret === "undefined" || ret === null || ret == '') { 
+                    return; 
+                }
                 var state = ret.state;
                 var title = ret.title;
                 var url = ret.url;
-                update(state, title, url); // do this by hand when performing navigation
-                                           // as "popstate" wont give us the current 
-                                           // state when pushing
+                update(state, title, url); // do this by hand when performing 
+                                           // navigation as "popstate" wont 
+                                           // give us the current state when 
+                                           // pushing
             }
             helper(locator(window.location.href)); 
         }
@@ -148,6 +151,8 @@ function Sextant(locator, updater, hashchangesstate) {
 
             // jQuery to add init to page ready and - if used - hashchange
             $(document).ready(nav.init);
+            // TODO this needs an equivelent for not using jQuery, or maybe drop
+            // non jQuery support
             if (hashchangesstate == true) { 
                 // this appears to be firing on navigation via history buttons 
                 // on Firefox, however it is required to make changing the URL 
