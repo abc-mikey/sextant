@@ -23,7 +23,7 @@ SOFTWARE.*/
 
 var snglSextant = (function() {
     // reference
-    var do_once;
+    var _initialised;
 
     function init() {
         // TODO initialise my singleton
@@ -37,22 +37,33 @@ var snglSextant = (function() {
     // return the object to use like "Sextant.goTo()"
     return {
 
-        // settup Sextant 
+        /**
+         * settup Sextant assigning handlers for: 
+         *  - locating the page by, determining the state and title from the URL
+         *  - updating the contents to match the state belonging to the page
+         *  - options additional flags including:
+         *    > flag to treat changes to the hash part of the URL as a page change 
+         */
         setup: function() {
-          if (do_once) throw "only once";
-          else do_once = 1;
-     
+          if (_initialised) throw "Sextant should only be setup once!";
+          
+          /* do setup here */
+
+          // set flag to show that we have initialised Sextant
+          _initialised = 1;
         }, 
 
-        // 
+        // go to a URL using sextant 
         goTo: function () {
      
         },
 
+        // go to a URL, based on the results of a AJAJ call, using sextant 
         goToJSON: function () {
      
         },
 
+        // create a page representation from a state, title and URL
         page: function() {
 
         }
