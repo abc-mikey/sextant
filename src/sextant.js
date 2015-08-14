@@ -20,6 +20,45 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
+
+var snglSextant = (function() {
+    // reference
+    var do_once;
+
+    function init() {
+        // TODO initialise my singleton
+        // TODO add private methods / properties to singleton
+        return {
+            // TODO add public methods / properties
+        };
+
+    };
+
+    // return the object to use like "Sextant.goTo()"
+    return {
+
+        // settup Sextant 
+        setup: function() {
+          if (do_once) throw "only once";
+          else do_once = 1;
+     
+        }, 
+
+        // 
+        goTo: function () {
+     
+        },
+
+        goToJSON: function () {
+     
+        },
+
+        page: function() {
+
+        }
+    };
+})();
+
 // page constructor that takes: state, title, url
 function SextantPage(state, title, url) {
     return {
