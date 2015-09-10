@@ -22,17 +22,13 @@ SOFTWARE.*/
 
 
 var snglSextant = (function() {
-    // reference
-    var _initialised;
+    // private variables
+    var _initialised = false;
+    var _hashchangesstate = false;
 
-    function init() {
-        // TODO initialise my singleton
-        // TODO add private methods / properties to singleton
-        return {
-            // TODO add public methods / properties
-        };
-
-    };
+    // all functions go here
+    
+    // setup jQuery
 
     // return the object to use like "Sextant.goTo()"
     return {
@@ -44,14 +40,28 @@ var snglSextant = (function() {
          *  - options additional flags including:
          *    > flag to treat changes to the hash part of the URL as a page change 
          */
-        setup: function() {
+        // TODO locator should be allowed make a JSON call to determin the state 
+        setup: function(locator, updater, options) {
           if (_initialised) throw "Sextant should only be setup once!";
+
+          
+          // unpack options 
+          if (typeof options !== 'undefined') {
+
+            if (typeof options.hashchangesstate !== 'undefined') {
+              _hashchangesstate = options.hashchangesstate ? true : false;
+            }
+          }
           
           /* do setup here */
 
           // set flag to show that we have initialised Sextant
-          _initialised = 1;
+          _initialised = true;
         }, 
+
+        // 
+        JSON: function(url_builder, response_handler, error_handler) {
+        },
 
         // go to a URL using sextant 
         goTo: function () {
@@ -64,8 +74,12 @@ var snglSextant = (function() {
         },
 
         // create a page representation from a state, title and URL
-        page: function() {
-
+        page: function(state, title, url) {
+            return {
+                state: state,
+                title: title,
+                url: url
+            };
         }
     };
 })();
@@ -106,6 +120,7 @@ function Sextant(locator, updater, hashchangesstate) {
     }
 
     var _state;
+
     hashchangesstate = typeof hashchangesstate === "boolean" 
                      ? hashchangesstate 
                      : false;
@@ -137,7 +152,7 @@ function Sextant(locator, updater, hashchangesstate) {
     }
 
     // update the page and push or replace the state onto the history stack
-    function push(page, replace) {
+    function push_hist(page, replace) {
         // default to push not replace
         replace = replace === "boolean" ? replace : false;
 
@@ -163,7 +178,7 @@ function Sextant(locator, updater, hashchangesstate) {
 
             // update and replace history on page load
             $(document).ready(function () {
-                push(locator(window.location.href), true);
+                push_hist(locator(window.location.href), true);
             });
 
             if (hashchangesstate == true) {
@@ -205,7 +220,7 @@ function Sextant(locator, updater, hashchangesstate) {
                 // TODO check that "this" supports click
                 this.click(function (event) {
                     event.preventDefault();
-                    push(callback(_state));
+                    push_hist(callback(_state));
                 });
                 return this;
             };
@@ -232,7 +247,7 @@ function Sextant(locator, updater, hashchangesstate) {
 
                     $.getJSON(url, function (json, stat) {
                         if (stat == "success") {
-                            push(callback(json, _state));
+                            push_hist(callback(json, _state));
                         } else if (typeof err_callback === "function") {
                             err_callback(stat, _state);
                         } else {
